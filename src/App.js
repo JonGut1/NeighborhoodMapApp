@@ -8,18 +8,16 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.map;
-    this.geocoder;
     this.mapRef = React.createRef();
     this.location = {lat: 54.897578, lng: 23.892650};
     this.locPlaces = {};
-    this.request;
     this.clientId = 'IUU3WIOLQLVLNEZYMHB3KZEN42BC1DBWFLOXMAEKUGKA0QON';
     this.placesKey = 'PK3DLDNZ0WJA515SUGE1JN0FEDG23NAXKQFLIGSX0A44A55D';
     this.placesQuery = 'restaurant';
     this.placesV = '20180323';
     this.placesLimit = 10;
-    this.placesLocation = '54.897578, 23.892650';
-    this.radius = 1000;
+    this.ne;
+    this.sw;
   }
 
   componentDidMount() {
@@ -28,48 +26,46 @@ class App extends Component {
 
 /* initilizes the map */
   initMap() {
+    let call = true;
     this.map = new window.google.maps.Map(this.mapRef.current, {
       center: this.location,
       zoom: 15,
       mapTypeControl: false,
     });
-
-    //fetch('https://api.foursquare.com/v2/venues/explore?ll=40.7,-74&client_id=IUU3WIOLQLVLNEZYMHB3KZEN42BC1DBWFLOXMAEKUGKA0QON&client_secret=PK3DLDNZ0WJA515SUGE1JN0FEDG23NAXKQFLIGSX0A44A55D&query=coffee&v=20180323', {
-    //}).then(response => {
-      //return response.json();
-    //}).then(result => {
-      //console.log(result);
-    //});
-    this.managePlaces();
+    window.google.maps.event.addListener(this.map, 'bounds_changed', () => {
+      const bounds = this.map.getBounds();
+      this.sw = `${bounds.f.b}, ${bounds.b.b}`;
+      this.ne = `${bounds.f.f}, ${bounds.b.f}`;
+      if (call) {
+        call = false;
+        this.managePlaces();
+      }
+    });
   }
 
 /* puts all of the places in an array */
 managePlaces(response, status) {
   console.log(999);
-  fetch(`https://api.foursquare.com/v2/venues/explore?ll=${this.placesLocation}&client_id=${this.clientId}&client_secret=${this.placesKey}&query=${this.placesQuery}&limit=${this.placesLimit}&radius=${this.radius}&v=${this.placesV}`)
+  fetch(`https://api.foursquare.com/v2/venues/search?intent=browse&sw=${this.sw}&ne=${this.ne}&client_id=${this.clientId}&client_secret=${this.placesKey}&query=${this.placesQuery}&limit=${this.placesLimit}&v=${this.placesV}`)
   .then(response => {
     return response.json();
   })
   .then(result => {
     this.locPlaces = result.response;
     console.log(this.locPlaces);
-    console.log(result.response);
     this.createMarkers();
   });
 }
 
 /* creates markers */
 createMarkers() {
-  console.log(this.locPlaces);
-  this.locPlaces.groups[0].items.forEach(loc => {
-    const location = loc.venue.location;
-    console.log(loc);
+  this.locPlaces.venues.forEach(loc => {
     const markers = new window.google.maps.Marker({
       map: this.map,
-      position: {lat: location.lat, lng: location.lng},
+      position: {lat: loc.location.lat, lng: loc.location.lng},
+      animation: window.google.maps.Animation.DROP,
     });
   });
-  console.log(this.locPlaces);
 }
 
   render() {
