@@ -38,6 +38,7 @@ class Maps extends Component {
 					<button tabIndex='1' aria-label='hamburger' onClick={() => this.openNav()}>
 						<Glyphicon glyph='menu-hamburger'></Glyphicon>
 					</button>
+					<span>{this.props.filter}</span>
 				</nav>
 				<div tabIndex='1' className='map' aria-label='Neighborhood map' role='application' ref={this.props.reference}></div>
 			</main>
