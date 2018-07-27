@@ -1,0 +1,162 @@
+.Search {
+	order: 1;
+	display: flex;
+	flex-direction: column;
+	width: 30%;
+	height: 100%;
+}
+
+.title {
+	width: 100%;
+	height: 10%;
+}
+
+.search-cont {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 90%;
+	background-color: #F8F6ED;
+}
+
+.title h1 {
+	margin: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: #F5C100;
+	color: white;
+	border: none;
+	font-size: 26px;
+	width: 100%;
+	height: 100%;
+}
+
+.filtering-cont {
+	display: flex;
+	width: 100%;
+	height: 7%;
+}
+
+.filtering-cont input {
+	height: 100%;
+	width: 80%;
+	border: none;
+	text-align: center;
+}
+
+.filtering-cont button {
+	width: 20%;
+	height: 100%;
+	border: none;
+	border-radius: 0px;
+	background-color: white;
+}
+
+.filterButton {
+	width: 20%;
+	height: 100%;
+	background-color: white;
+	border: none;
+}
+
+.filterButton span {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	font-size: 22px;
+	color: #F5C100;
+}
+
+.filterButton ul {
+	position: absolute;
+	z-index: 1002;
+	background-color: white;
+	width: 20em;
+}
+
+.filterButton button[current='selected'] {
+	background-color: #F5C100;
+	color: white;
+}
+
+.filterButton button {
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	padding: 0.5em;
+	font-weight: bold;
+	font-size: 16px;
+	width: 100%;
+	border-bottom: 1px solid silver;
+	transition: 0.3s;
+}
+
+.filterButton button:hover {
+	transition: 0.3s;
+	transform: scale(1.2);
+}
+
+.results {
+	width: 100%;
+	height: 93%;
+}
+
+.results ul {
+	width: 100%;
+	height: 100%;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	list-style-type: none;
+	padding: 0;
+}
+
+.results button {
+	display: flex;
+	align-items: center;
+	border-bottom: 1px solid #656565;
+	border-top: 1px solid #656565;
+	height: 4em;
+	width: 100%;
+	transition: 0.3s;
+	background-color: white;
+}
+
+.results span {
+	padding-left: 2em;
+	font-size: 16px;
+	font-weight: 600;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.results button:hover {
+	cursor: pointer;
+	transform: translateX(30px);
+	transition: 0.3s;
+	background-color: white;
+}
+
+@media screen and (max-width: 800px) {
+	.filterButton ul {
+		width: 10em;
+		bottom: -15em;
+	}
+}
+
+@media screen and (max-width: 700px) {
+	.Search {
+		position: fixed;
+		z-index: 1;
+		width: 60%;
+		box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.3);
+	}
+
+	.title h1 {
+		font-size: 1.2em;
+	}
+
+}
