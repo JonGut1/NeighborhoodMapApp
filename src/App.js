@@ -10,10 +10,14 @@ class App extends Component {
     super(props);
     this.map;
     this.mapRef = React.createRef();
+    this.documentRef = React.createRef();
+    this.floaterRef = React.createRef();
     this.location = {lat: 54.897578, lng: 23.892650};
     this.markers = {};
     this.categories = [];
     this.infoWindow;
+    this.listMap = [];
+    this.localFocus;
   }
 
   componentDidMount() {
@@ -26,9 +30,18 @@ class App extends Component {
 
   state = {
     venues: null,
+    current: '',
     errData: '',
     errFloater: null,
+    removeFilterList: null,
+    openNav: 'true',
     filterName: '',
+    ariaHid: 'true',
+    tabIndex: {
+      tabErr: '-1',
+      tabSearch: '1',
+      tabMap: '1',
+    },
     request: {
       sw: '',
       ne: '',
@@ -43,6 +56,7 @@ class App extends Component {
     this.map = new window.google.maps.Map(this.mapRef.current, {
       center: this.location,
       zoom: 14,
+      fullscreenControl: false,
       mapTypeControl: false,
     });
 
@@ -66,6 +80,11 @@ class App extends Component {
     this.setState({
       errFloater: true,
       errData: message,
+      ariaHid: 'false',
+    }, () => {
+      this.addCurrentFocus();
+      this.floaterRef.current.style.display = 'block'
+      this.manageFocus(this.floaterRef.current, null, 'err');
     });
     console.log(`${error} did not load....... | ${message}`);
   }
@@ -81,11 +100,19 @@ class App extends Component {
         }
         this.categories.push(categories);
       });
+      this.addCurrent(this.categories[0]);
       this.changeRequest('filter', null, null, this.categories[0].id, this.categories[0].name).then(() => {
         return response;
       });
     }).catch(err => {
       this.errorHandler('Places Categories');
+    });
+  }
+
+  /* adds to state current selection */
+  addCurrent(current) {
+    this.setState({
+      currentSelection: current.id,
     });
   }
 
@@ -141,6 +168,7 @@ deleteMarkers() {
 
 /* creates markers */
 createMarkers() {
+  if (this.state.venues) {
   this.state.venues.venues.forEach(loc => {
     const markers = new window.google.maps.Marker({
       map: this.map,
@@ -154,9 +182,27 @@ createMarkers() {
     this.markers[loc.id] = markers;
   });
 }
+}
+
+/* animates clicked marker */
+animateMarker(marker) {
+  for (let mark in this.markers) {
+    if (this.markers[mark].getAnimation() !== null) {
+      this.markers[mark].setAnimation(null);
+    }
+  }
+  marker.setAnimation(window.google.maps.Animation.BOUNCE);
+}
 
 /* insert info window */
 insertInfoWindow(marker, id) {
+  this.addCurrentFocus();
+  if (window.innerWidth < 701) {
+    this.setState({
+      openNav: 'true',
+    });
+  }
+  this.animateMarker(marker);
   marker.setMarker = null;
   let content = '';
   this.sortVenueDetails(id).then(response => {
@@ -164,9 +210,142 @@ insertInfoWindow(marker, id) {
     this.infoWindow.setContent(content);
     this.infoWindow.open(this.map, marker);
     this.infoWindow.addListener('closeclick', () => {
+      marker.setAnimation(null);
       marker.setMarker = null;
+      this.manageFocus(this.mapRef.current.querySelector('#infoWindowCont'), 'close', 'infoWindow', marker);
     });
+    const loc = {
+      lat: marker.position.lat(),
+      lng: marker.position.lng(),
+    }
+    const radius = 100;
+    const streetViewService = new window.google.maps.StreetViewService();
+    streetViewService.getPanoramaByLocation(loc, radius, (data, status) => this.getGoogleStreets(data, status, marker));
+    this.manageFocus(this.mapRef.current.querySelector('#infoWindowCont'), null, 'infoWindow', marker);
   });
+}
+
+/* gets google street view */
+getGoogleStreets(imageData, status, marker) {
+  const markerLoc = {
+      lat: marker.position.lat(),
+      lng: marker.position.lng(),
+  }
+
+  if (status === 'OK') {
+    const loc = imageData.location.latLng;
+    const header = window.google.maps.geometry.spherical.computeHeading(loc, marker.position);
+
+    const panorama = new window.google.maps.StreetViewPanorama(document.getElementById('pano'), {
+      position: markerLoc,
+      pov: {
+        heading: header,
+        pitch: 20,
+      }
+    });
+  } else {
+    document.getElementById('pano').innerText = 'Street View could not be found';
+  }
+}
+
+/* manages focus of the keyoard navigation */
+manageFocus(cont, checker, type, marker) {
+  console.log(cont, checker, type);
+
+  if (type === 'list') {
+      cont.children[0].focus();
+      checker === 'close' ? cont.removeEventListener('keydown', (e) => this.keyboardFocusList(e, cont)) : cont.addEventListener('keydown', (e) => this.keyboardFocusList(e, cont));
+  }
+
+  if (type === 'infoWindow') {
+    console.log(document.readyState);
+    console.log(cont);
+    setTimeout(() => {
+      console.log(12313);
+      cont.focus();
+      checker === 'close' ? cont.removeEventListener('keydown', (e) => this.keyboardFocusInfoWindow(e, cont, marker)) : cont.addEventListener('keydown', (e) => this.keyboardFocusInfoWindow(e, cont, marker));
+    }, 100);
+
+
+    console.log(cont);
+  }
+
+  if (type === 'err') {
+      this.setTabIndex();
+      cont.focus();
+      checker === 'close' ? cont.removeEventListener('keydown', (e) => this.keyboardFocusErr(e, cont)) : cont.addEventListener('keydown', (e) => this.keyboardFocusErr(e, cont));
+      if (type === 'err' && checker === 'close') {
+        this.setState({
+          ariaHid: 'true',
+        });
+        cont.removeEventListener('keydown', (e) => this.keyboardFocusErr(e, cont))
+        setTimeout(() => {
+          cont.style.display = 'none';
+        }, 100);
+        this.currentFocus.focus();
+        this.checkAnimation();
+      }
+  }
+}
+
+/* keyboard focus container */
+keyboardFocusList(e, cont) {
+  console.log(cont);
+  let place = '';
+  let inc = 0;
+  for (let i = 0; i < cont.children.length; i++) {
+    inc = i;
+    if (document.activeElement === cont.children[i]) {
+      if (cont.children[inc + 1] === undefined) {
+        place = 'top';
+      }
+      if (cont.children[inc - 1] === undefined) {
+        place = 'bottom';
+      }
+    }
+  }
+  setTimeout(() => {
+    if (document.activeElement.parentNode !== cont) {
+      if (place === 'top') {
+        console.log(cont.children[0]);
+        cont.children[0].focus();
+      } else if (place === 'bottom') {
+        console.log(cont.lastChild);
+        cont.lastChild.focus();
+      }
+    }
+  }, 0);
+}
+
+keyboardFocusErr(e, cont) {
+  setTimeout(() => {
+    const length = cont.children.length
+    if (document.activeElement.id === 'skipErr') {
+      cont.children[length - 2].focus();
+    } if (document.activeElement === cont) {
+      cont.children[0].focus();
+    }
+  }, 0);
+}
+
+keyboardFocusInfoWindow(e, cont, marker) {
+   if (e.key === 'Escape') {
+    this.infoWindow.close();
+      marker.setAnimation(null);
+      marker.setMarker = null;
+      this.currentFocus.focus();
+      cont.removeEventListener('keydown', (e) => this.keyboardFocusInfoWindow(e, cont, marker))
+      return;
+  }
+
+  setTimeout(() => {
+    const length = cont.children.length
+    if (document.activeElement.id === 'skip') {
+      cont.children[length - 2].focus();
+    } if (document.activeElement === cont) {
+      cont.children[0].focus();
+    }
+  }, 0);
 }
 
 /* sort venue details */
@@ -174,7 +353,6 @@ sortVenueDetails(id) {
   return FoursquarePlaces.getDetails(id).then(response => {
     const venue = response.response.venue;
     let hours;
-    console.log(response);
 
     function rating() {
       return venue.rating ?  `<span style="color: ${ratingColor()}">Rating: ${venue.rating}</span>` : `<span></span>`;
@@ -192,8 +370,7 @@ sortVenueDetails(id) {
       return venue.location && venue.location.address ? `<b>${venue.location.address || ''} ${venue.location.city || ''} ${venue.location.country || ''}</b>` :
       `<b>Address not available</b>`;
     }
-
-    if (venue.hours && venue.hours.timeframes) {
+    if (venue && venue.hours && venue.hours.timeframes) {
       hours = venue.hours.timeframes.map(day => {
         let openHours = '';
         day.open.forEach(time => {
@@ -201,7 +378,7 @@ sortVenueDetails(id) {
         });
         return day.days + ': ' + openHours;
       });
-    } else if (venue.popular && venue.popular.timeframes) {
+    } else if (venue && venue.popular && venue.popular.timeframes) {
       hours = venue.popular.timeframes.map(day => {
         let openHours = '';
         day.open.forEach(time => {
@@ -219,39 +396,50 @@ sortVenueDetails(id) {
         return;
       }
     }
-
     const repl = hoursHtml();
-    console.log(repl);
-    const r = repl.replace(/,/g, '');
-    console.log(r);
+    let r = null;
+    if (repl) {
+      r = repl.replace(/,/g, '');
+    }
 
-    const content = `<div className="infoWindowCont">` +
-      `<div className="address">${address()}</div>` +
-      `<div className="likesRating">${likes()}${rating()}</div>` +
-      `<div className="hours">` +
-      `${r || ''}` +
-      `</div>` +
-      `<div className="streetView"></div>` +
-      `<div>`;
-      console.log(JSON.stringify(content));
+    const content = `<div tabIndex="1" role='dialogue' aria-label='info window' id="infoWindowCont">
+      <div tabIndex="1" id="address">${address()}</div>
+      <div tabIndex="1" id="likesRating">${likes()}${rating()}</div>
+      <div tabIndex="1" id="hours">
+      ${r || ''}
+      </div>
+      <div tabIndex="1" id="pano" role="application"></div>
+      <div id="skip" tabIndex='1'></div>
+      </div>`;
     return content;
 
   }).catch(err => {
-      this.errorHandler('Places Details');
+      //this.errorHandler('Places Details');
+      return `<div tabIndex='1' role='dialogue' aria-label='info window' id="infoWindowCont">
+      <div tabIndex="1"><p>Sorry, some of the places details could not be loaded.</p></div>
+      <div tabIndex="1" id="pano" role="application"></div>
+      <div id="skip" tabIndex='1'></div>
+      </div>`;
     });
+}
+
+/* closes the info window on click */
+closeInfoWindow() {
+  console.log('worked');
 }
 
 /* filters the results based on the selected category */
 filters(selection) {
   let name;
   this.categories.forEach(item => {
-    if (item.id === selection.target.value) {
+    if (item.id === selection.target.id) {
       name = item.name;
       return;
     }
   });
   this.deleteMarkers();
-  this.changeRequest('filter', null, null, selection.target.value, name).then(() => this.managePlaces(this.state.request));
+  this.changeRequest('filter', null, null, selection.target.id, name).then(() => this.managePlaces(this.state.request));
+  this.currentFocus.focus();
 }
 
 /* filter markers */
@@ -264,7 +452,6 @@ hideMarkers(filteredMarkers) {
     }
   }
 
-  console.log(filteredMarkers);
   if (filteredMarkers) {
     const markersKeys = Object.keys(this.markers);
     filteredMarkers.forEach(fil => {
@@ -273,7 +460,36 @@ hideMarkers(filteredMarkers) {
   }
 }
 
-changeFlouter() {
+openNav(check) {
+  const tabIndexObj = Object.assign({}, this.state.tabIndex);
+  check === 'true' ? tabIndexObj.tabSearch = '1' : tabIndexObj.tabSearch = '-1';
+  if (window.innerWidth < 701) {
+    check === 'true' ? tabIndexObj.tabSearch = '-1' : tabIndexObj.tabSearch = '1';
+  }
+  this.setState({
+    openNav: check,
+    tabIndex: tabIndexObj,
+  });
+}
+
+addCurrentFocus() {
+  this.currentFocus = document.activeElement;
+}
+
+setTabIndex(cont) {
+  const tabObj = Object.assign({}, this.state.tabIndex);
+  if (this.state.tabIndex.tabErr === '1') {
+    tabObj.tabErr = '-1';
+  } else {
+    tabObj.tabErr = '1';
+  }
+
+  this.setState({
+    tabIndex: tabObj,
+  });
+}
+
+checkAnimation() {
   this.setState({
     errFloater: null,
   });
@@ -281,12 +497,22 @@ changeFlouter() {
 
   render() {
     return (
-      <div className="App">
+      <div ref={this.documentRef} className="App">
         <Maps
+          tab={this.state.tabIndex}
+          opeNav={this.state.openNav}
           filter={this.state.filterName}
           reference={this.mapRef}
+          openNav={(check) => this.openNav(check)}
         />
         <Search
+          appRef={this.documentRef}
+          currentFocus={this.currentFocus}
+          manageFocus={(cont, checker, type) => this.manageFocus(cont, checker, type)}
+          addCurrentFocus={() => this.addCurrentFocus()}
+          tab={this.state.tabIndex}
+          openNav={this.state.openNav}
+          currentSelection={this.state.currentSelection}
           insertInfoWindow={(selection, id) => this.insertInfoWindow(selection, id)}
           markers={this.markers}
           filters={(selection) => this.filters(selection)}
@@ -294,7 +520,18 @@ changeFlouter() {
           venues={this.state.venues}
           hideMarkers={(filteredMarkers) => this.hideMarkers(filteredMarkers)}
         />
-        <div className='errFloater' animation={this.state.errFloater ? 'true' : 'false'}><button><Glyphicon onClick={() => this.changeFlouter()} glyph='remove'></Glyphicon></button><span>{this.state.errData}. Maybe try reloading the page.</span><div className='reload'><button onClick={() => window.location.reload()}><span>Reload</span></button></div></div>
+        <div aria-hidden={this.state.ariaHid}
+        tabIndex={this.state.tabIndex.tabErr} ref={this.floaterRef} role='alert' id='floater' className='errFloater' animation={this.state.errFloater ? 'true' : 'false'}>
+        <button aria-label='quit arror message' tabIndex={this.state.tabIndex.tabErr} className='exitErr' onClick={() => this.manageFocus(this.floaterRef.current, 'close', 'err')}>
+        <Glyphicon glyph='remove'></Glyphicon>
+        </button>
+        <span>{this.state.errData}. Maybe try reloading the page.</span>
+        <button tabIndex={this.state.tabIndex.tabErr} className='reload' role='link' onClick={() => window.location.reload()}>
+        <span>Reload</span>
+        </button>
+        <div id="skipErr" tabIndex='1'></div>
+        </div>
+
       </div>
     );
   }
