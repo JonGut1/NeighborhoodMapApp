@@ -84,11 +84,18 @@ ul {
 	position: relative;
 	background-color: #E85050;
 	width: 50%;
-	height: 60%;
+	height: 30%;
 	margin-right: auto;
 	margin-left: auto;
 	margin-bottom: 1em;
 	box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.3);
+	transition: 1s;
+}
+
+.reload:hover {
+	transition: 1s;
+	cursor: pointer;
+	background-color: red;
 }
 
 #hours ul{
@@ -156,13 +163,7 @@ ul {
 	height: 200px;
 	margin-left: auto;
 	margin-right: auto;
-}
-
-#closeInfoWindow {
-	width: 10%;
-	height: 10%;
-	margin-left: 90%;
-	background-color: red;
+	margin-top: 1em;
 }
 
 @media screen and (max-width: 701px) {

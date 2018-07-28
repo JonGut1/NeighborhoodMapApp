@@ -1,3 +1,4 @@
+
 /* Google maps api key */
 const key = 'AIzaSyB0bwSmvFTg3gJgji_EUKtPxOHVq7061JI';
 
@@ -30,7 +31,7 @@ class GoogleMaps {
 	    		}
 	    		num++;
 	    	}, 100);
-		});
+		})
 	}
 }
 
@@ -41,7 +42,8 @@ class GoogleMaps {
 class FoursquarePlaces {
 	/* fetches places data based on category id */
 	static getPlaces(request) {
-		return fetch(`https://api.foursquare.com/v2/venues/search?intent=browse&sw=${request.sw}&ne=${request.ne}&client_id=${clientId}&client_secret=${placesKey}&categoryId=${request.filter}&limit=${request.limit}&v=20180323`)
+		const placesURL = `https://api.foursquare.com/v2/venues/search?intent=browse&sw=${request.sw}&ne=${request.ne}&client_id=${clientId}&client_secret=${placesKey}&categoryId=${request.filter}&limit=${request.limit}&v=20180323`;
+		return fetch(placesURL)
 		  .then(response => {
 		    return response.json();
 		  })
@@ -70,7 +72,7 @@ class FoursquarePlaces {
 
 	/* fetch venue details */
 	static getDetails(venueId) {
-		return fetch(`https://api.foursquare.com/v2/venues/${venueId}?&client_id=${clientId}&v=20180323`)
+		return fetch(`https://api.foursquare.com/v2/venues/venueId?client_secret=${placesKey}&client_id=${clientId}&v=20180323`)
 		.then(response => {
 			return response.json();
 		})

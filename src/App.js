@@ -168,7 +168,7 @@ deleteMarkers() {
 
 /* creates markers */
 createMarkers() {
-  if (this.state.venues) {
+  if (this.state.venues.venues) {
   this.state.venues.venues.forEach(loc => {
     const markers = new window.google.maps.Marker({
       map: this.map,
@@ -250,24 +250,18 @@ getGoogleStreets(imageData, status, marker) {
 
 /* manages focus of the keyoard navigation */
 manageFocus(cont, checker, type, marker) {
-  console.log(cont, checker, type);
-
   if (type === 'list') {
       cont.children[0].focus();
       checker === 'close' ? cont.removeEventListener('keydown', (e) => this.keyboardFocusList(e, cont)) : cont.addEventListener('keydown', (e) => this.keyboardFocusList(e, cont));
   }
 
   if (type === 'infoWindow') {
-    console.log(document.readyState);
-    console.log(cont);
     setTimeout(() => {
-      console.log(12313);
-      cont.focus();
-      checker === 'close' ? cont.removeEventListener('keydown', (e) => this.keyboardFocusInfoWindow(e, cont, marker)) : cont.addEventListener('keydown', (e) => this.keyboardFocusInfoWindow(e, cont, marker));
+      if (cont) {
+        cont.focus();
+        checker === 'close' ? cont.removeEventListener('keydown', (e) => this.keyboardFocusInfoWindow(e, cont, marker)) : cont.addEventListener('keydown', (e) => this.keyboardFocusInfoWindow(e, cont, marker));
+      }
     }, 100);
-
-
-    console.log(cont);
   }
 
   if (type === 'err') {
@@ -290,7 +284,6 @@ manageFocus(cont, checker, type, marker) {
 
 /* keyboard focus container */
 keyboardFocusList(e, cont) {
-  console.log(cont);
   let place = '';
   let inc = 0;
   for (let i = 0; i < cont.children.length; i++) {
@@ -307,10 +300,8 @@ keyboardFocusList(e, cont) {
   setTimeout(() => {
     if (document.activeElement.parentNode !== cont) {
       if (place === 'top') {
-        console.log(cont.children[0]);
         cont.children[0].focus();
       } else if (place === 'bottom') {
-        console.log(cont.lastChild);
         cont.lastChild.focus();
       }
     }
@@ -403,11 +394,14 @@ sortVenueDetails(id) {
     }
 
     const content = `<div tabIndex="1" role='dialogue' aria-label='info window' id="infoWindowCont">
+      <figure>
       <div tabIndex="1" id="address">${address()}</div>
       <div tabIndex="1" id="likesRating">${likes()}${rating()}</div>
       <div tabIndex="1" id="hours">
       ${r || ''}
       </div>
+      <figcaption>Above data taken from Foursquare.com</figcaption>
+      </figure>
       <div tabIndex="1" id="pano" role="application"></div>
       <div id="skip" tabIndex='1'></div>
       </div>`;
@@ -421,11 +415,6 @@ sortVenueDetails(id) {
       <div id="skip" tabIndex='1'></div>
       </div>`;
     });
-}
-
-/* closes the info window on click */
-closeInfoWindow() {
-  console.log('worked');
 }
 
 /* filters the results based on the selected category */

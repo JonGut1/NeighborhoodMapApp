@@ -19,7 +19,6 @@ class Maps extends Component {
 	}
 
 	componentDidMount() {
-		console.log(window.innerWidth);
 	  if (window.innerWidth < 701) {
 	  	this.close = {
 	  		'transitionTimingFunction': 'ease-out',
@@ -45,7 +44,6 @@ class Maps extends Component {
 	openNav() {
 		let check;
 		this.state.openNav === 'false' ? check = 'true' : check = 'false';
-		console.log(check);
 		if (this.props.opeNav === 'true') {
 			check = 'false';
 		}

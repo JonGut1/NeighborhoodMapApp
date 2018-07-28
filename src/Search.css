@@ -43,6 +43,7 @@
 	width: 80%;
 	border: none;
 	text-align: center;
+	border: 1px solid silver;
 }
 
 .filtering-cont button {
@@ -90,13 +91,15 @@
 	font-weight: bold;
 	font-size: 16px;
 	width: 100%;
-	border-bottom: 1px solid silver;
-	transition: 0.3s;
 }
 
-.filterButton button:hover {
-	transition: 0.3s;
-	transform: scale(1.2);
+.filterButton button:hover span {
+	animation: searchIcon 1.5s;
+}
+
+@keyframes searchIcon {
+	0% {transform: rotate(0deg);}
+	100% {transform: rotate(720deg);}
 }
 
 .results {

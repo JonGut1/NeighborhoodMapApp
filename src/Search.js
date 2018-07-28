@@ -19,10 +19,6 @@ class Search extends Component {
 		this.lastFocus;
 	}
 
-	componentDidMount() {
-		console.log(this.props.currentSelection);
-	}
-
 	state = {
 		query: '',
 		filteredResults: null,
@@ -60,12 +56,10 @@ class Search extends Component {
 	}
 
 	changeFilter(selection) {
-		console.log(document.querySelector('.nav'));
 		document.querySelector('.nav').focus();
 		this.setState({
 			current: selection.target.id,
 		});
-		console.log(selection);
 		this.resetStates();
 		this.props.filters(selection);
 	}
@@ -118,7 +112,7 @@ class Search extends Component {
 		this.state.current.length < 1 ? current = this.props.currentSelection : current = this.state.current;
 
 		return(
-			<aside tabIndex={this.props.tab.tabSearch} style={length && this.props.openNav === 'false' ? this.open : this.close} aria-labeledby='location' className='Search'>
+			<aside tabIndex={this.props.tab.tabSearch} style={length && this.props.openNav === 'false' ? this.open : this.close} aria-describedby='location' className='Search'>
 				<div className='title'>
 					<h1 id='location'>Kaunas Old Town</h1>
 				</div>
@@ -133,9 +127,9 @@ class Search extends Component {
 							<div className='filterButton'>
 								<button tabIndex={this.props.tab.tabSearch} aria-label='Filter events' className='filterButton' onClick={(e) => this.openList(e)}><Glyphicon glyph="filter"></Glyphicon></button>
 								{this.state.openList && (
-									<ul id='selectlist' ref={this.listRef} role='list'>
+									<ul id='selectlist' ref={this.listRef} role='listbox'>
 										{this.props.filterOpt.map(select => (
-											<button tabIndex={this.props.tab.tabSearch} role='link' aria-label={select.name} key={select.id} current={select.id === current ? 'selected' : ''} onClick={(selection) => this.changeFilter(selection)} id={select.id}>{select.name}</button>
+											<button tabIndex={this.props.tab.tabSearch} role='link' aria-label={select.name} key={select.id} aria-selected={select.id === current ? 'true' : 'false'} current={select.id === current ? 'selected' : ''} onClick={(selection) => this.changeFilter(selection)} id={select.id}>{select.name}</button>
 										))}
 									</ul>
 								)}
