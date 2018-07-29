@@ -17,7 +17,6 @@ class App extends Component {
     this.categories = [];
     this.infoWindow;
     this.listMap = [];
-    this.localFocus;
   }
 
   componentDidMount() {
@@ -30,7 +29,6 @@ class App extends Component {
 
   state = {
     venues: null,
-    current: '',
     errData: '',
     errFloater: null,
     removeFilterList: null,
@@ -60,6 +58,10 @@ class App extends Component {
       mapTypeControl: false,
     });
 
+    /*
+    * adds an event listener on the map listening for bound change,
+    * so that sw and ne bounds could be retrieved.
+    */
     window.google.maps.event.addListener(this.map, 'bounds_changed', () => {
       const bounds = this.map.getBounds();
       const sw = `${bounds.f.b}, ${bounds.b.b}`;
@@ -88,25 +90,28 @@ class App extends Component {
     });
     console.log(`${error} did not load....... | ${message}`);
   }
+
  /* get category id's */
   getCategor() {
     return FoursquarePlaces.getCategories().then(response => {
-      response.response.categories.forEach(cat => {
-        const categories = {
-            categories: cat.categories,
-            name: cat.shortName,
-            id: cat.id,
-            icon: cat.icon.prefix + cat.icon.suffix,
-        }
-        this.categories.push(categories);
-      });
-      this.addCurrent(this.categories[0]);
-      this.changeRequest('filter', null, null, this.categories[0].id, this.categories[0].name).then(() => {
-        return response;
-      });
-    }).catch(err => {
-      this.errorHandler('Places Categories');
-    });
+      if (response.meta.code === 200) {
+        response.response.categories.forEach(cat => {
+          const categories = {
+              categories: cat.categories,
+              name: cat.shortName,
+              id: cat.id,
+              icon: cat.icon.prefix + cat.icon.suffix,
+          }
+          this.categories.push(categories);
+        });
+        this.addCurrent(this.categories[0]);
+        this.changeRequest('filter', null, null, this.categories[0].id, this.categories[0].name).then(() => {
+          return response;
+        });
+      } else {
+        this.errorHandler('Places Categories');
+      }
+    })
   }
 
   /* adds to state current selection */
@@ -149,13 +154,14 @@ class App extends Component {
 /* puts all of the places in an array */
 managePlaces(request) {
   FoursquarePlaces.getPlaces(request).then(response => {
-    this.setState({
-      venues: response.response,
-    }, () => this.createMarkers());
-  }).catch(err => {
+    if (response.meta.code === 200) {
+      this.setState({
+        venues: response.response,
+      }, () => this.createMarkers());
+    } else {
       this.errorHandler('Places');
-  });
-
+    }
+  })
 }
 
 /* delete all markers from the screen */
@@ -168,7 +174,7 @@ deleteMarkers() {
 
 /* creates markers */
 createMarkers() {
-  if (this.state.venues.venues) {
+  if (this.state.venues && this.state.venues.venues) {
   this.state.venues.venues.forEach(loc => {
     const markers = new window.google.maps.Marker({
       map: this.map,
@@ -248,7 +254,7 @@ getGoogleStreets(imageData, status, marker) {
   }
 }
 
-/* manages focus of the keyoard navigation */
+/* manages focus of the keyboard navigation */
 manageFocus(cont, checker, type, marker) {
   if (type === 'list') {
       cont.children[0].focus();
@@ -282,7 +288,7 @@ manageFocus(cont, checker, type, marker) {
   }
 }
 
-/* keyboard focus container */
+/* keyboard focus list container */
 keyboardFocusList(e, cont) {
   let place = '';
   let inc = 0;
@@ -297,6 +303,11 @@ keyboardFocusList(e, cont) {
       }
     }
   }
+
+  /*
+  * setTimeout is needed so that the active element would have time
+  * to be updated.
+  */
   setTimeout(() => {
     if (document.activeElement.parentNode !== cont) {
       if (place === 'top') {
@@ -308,6 +319,7 @@ keyboardFocusList(e, cont) {
   }, 0);
 }
 
+/* keyboard focus err modal cont */
 keyboardFocusErr(e, cont) {
   setTimeout(() => {
     const length = cont.children.length
@@ -319,6 +331,7 @@ keyboardFocusErr(e, cont) {
   }, 0);
 }
 
+/* keyboard focus infoWindow cont */
 keyboardFocusInfoWindow(e, cont, marker) {
    if (e.key === 'Escape') {
     this.infoWindow.close();
@@ -329,6 +342,10 @@ keyboardFocusInfoWindow(e, cont, marker) {
       return;
   }
 
+  /*
+  * setTimeout is needed so that the active element would have time
+  * to be updated.
+  */
   setTimeout(() => {
     const length = cont.children.length
     if (document.activeElement.id === 'skip') {
@@ -345,22 +362,30 @@ sortVenueDetails(id) {
     const venue = response.response.venue;
     let hours;
 
+    /* creates a rating's element for the infoWindow */
     function rating() {
       return venue.rating ?  `<span style="color: ${ratingColor()}">Rating: ${venue.rating}</span>` : `<span></span>`;
     }
 
+    /* creates a rating's color element for the infoWindow */
     function ratingColor() {
       return venue.ratingColor ? '#' + venue.ratingColor : 'black';
     }
 
+    /* creates a likes element for the infoWindow */
     function likes() {
       return venue.likes ? `<span style="color: #4C5DEB">${venue.likes.count} likes</span>` : `<span></span>`;
     }
 
+    /* creates an address element for the infoWindow */
     function address() {
       return venue.location && venue.location.address ? `<b>${venue.location.address || ''} ${venue.location.city || ''} ${venue.location.country || ''}</b>` :
       `<b>Address not available</b>`;
     }
+
+    /*
+    * sorts the working hours from the api
+    */
     if (venue && venue.hours && venue.hours.timeframes) {
       hours = venue.hours.timeframes.map(day => {
         let openHours = '';
@@ -380,6 +405,8 @@ sortVenueDetails(id) {
     } else {
       hours = null;
     }
+
+    /* creates a template for the element for the working hours */
     function hoursHtml() {
       if (hours) {
         return `<ul>${hours.map(list => `<li>${list}</li>`)}</ul>`;
@@ -393,6 +420,7 @@ sortVenueDetails(id) {
       r = repl.replace(/,/g, '');
     }
 
+    /* the content of the infoWindow */
     const content = `<div tabIndex="1" role='dialogue' aria-label='info window' id="infoWindowCont">
       <figure>
       <div tabIndex="1" id="address">${address()}</div>
@@ -407,8 +435,8 @@ sortVenueDetails(id) {
       </div>`;
     return content;
 
+    /* if there is an error a text message is displayed */
   }).catch(err => {
-      //this.errorHandler('Places Details');
       return `<div tabIndex='1' role='dialogue' aria-label='info window' id="infoWindowCont">
       <div tabIndex="1"><p>Sorry, some of the places details could not be loaded.</p></div>
       <div tabIndex="1" id="pano" role="application"></div>
@@ -431,7 +459,7 @@ filters(selection) {
   this.currentFocus.focus();
 }
 
-/* filter markers */
+/* filters the markers based on the selected category */
 hideMarkers(filteredMarkers) {
   for (let m in this.markers) {
     if (filteredMarkers) {
@@ -442,13 +470,16 @@ hideMarkers(filteredMarkers) {
   }
 
   if (filteredMarkers) {
-    const markersKeys = Object.keys(this.markers);
     filteredMarkers.forEach(fil => {
       this.markers[fil.id].setVisible(true);
     });
   }
 }
 
+/*
+* this is responsible for the indication whether the side menu should,
+* be open or closed.
+*/
 openNav(check) {
   const tabIndexObj = Object.assign({}, this.state.tabIndex);
   check === 'true' ? tabIndexObj.tabSearch = '1' : tabIndexObj.tabSearch = '-1';
@@ -461,10 +492,12 @@ openNav(check) {
   });
 }
 
+/* stores current focus into a variable */
 addCurrentFocus() {
   this.currentFocus = document.activeElement;
 }
 
+/* sets tab index, used by the err modal */
 setTabIndex(cont) {
   const tabObj = Object.assign({}, this.state.tabIndex);
   if (this.state.tabIndex.tabErr === '1') {
@@ -478,6 +511,7 @@ setTabIndex(cont) {
   });
 }
 
+/* sets the state that is responsible for the marker animation to null */
 checkAnimation() {
   this.setState({
     errFloater: null,

@@ -5,6 +5,7 @@ import { Glyphicon } from 'react-bootstrap';
 class Maps extends Component {
 	constructor(props) {
 		super(props);
+		/* styling for the main element */
 		this.open = {
 			transition: '0.3s',
 			width: '70%',
@@ -18,6 +19,10 @@ class Maps extends Component {
 		}
 	}
 
+	/*
+	* sets the styling and the side list position
+	* based on the window width.
+	*/
 	componentDidMount() {
 	  if (window.innerWidth < 701) {
 	  	this.close = {
@@ -41,6 +46,7 @@ class Maps extends Component {
     	openNav: 'true',
   	}
 
+  	/* sets whether the side menu is visible or not */
 	openNav() {
 		let check;
 		this.state.openNav === 'false' ? check = 'true' : check = 'false';

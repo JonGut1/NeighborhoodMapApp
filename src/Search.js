@@ -6,7 +6,9 @@ import escapeRegExp from 'escape-string-regexp'
 class Search extends Component {
 	constructor(props) {
 		super(props);
+		/* the ul tag of the filter dropdown menu ref */
 		this.listRef = React.createRef();
+		/* sets the style of the side menu */
 		this.open = {
 			transition: '0.3s',
 			left: '0',
@@ -16,7 +18,6 @@ class Search extends Component {
 			transition: '0.3s',
 			left: '-60%',
 		}
-		this.lastFocus;
 	}
 
 	state = {
@@ -77,14 +78,16 @@ class Search extends Component {
 
 	}
 
-
+	/* controlls whether the dropdown menu should open or not */
 	openList(e) {
 		if (this.props.filterOpt.length > 0) {
 			let action;
 			if (this.state.openList) {
 				action = null;
 				this.props.manageFocus(this.listRef.current, 'close', 'list');
-				this.props.currentFocus.focus();
+				if (this.props.currentFocus) {
+					this.props.currentFocus.focus();
+				}
 			} else {
 				this.props.addCurrentFocus();
 				action = true;
@@ -92,16 +95,18 @@ class Search extends Component {
 			this.setState({
 				openList: action,
 			}, () => {
-					if (action) {
-						this.props.manageFocus(this.listRef.current, null, 'list');
-					}
+				if (action) {
+					this.props.manageFocus(this.listRef.current, null, 'list');
+				}
 			});
 		}
 	}
 
 	render() {
+		/* checks the width of the screen */
 		const length = window.innerWidth < 701;
 		let venues;
+		/* determines which state or prop is ready to be referenced in render */
 		if (this.props.venues) {
 			this.state.filteredResults ?
 			venues = this.state.filteredResults
@@ -109,6 +114,7 @@ class Search extends Component {
 			venues = this.props.venues.venues;
 		}
 		let current;
+		/* determines the current selection of the dropdown list */
 		this.state.current.length < 1 ? current = this.props.currentSelection : current = this.state.current;
 
 		return(
@@ -125,11 +131,11 @@ class Search extends Component {
 							placeholder='Filter Results'
 						/>
 							<div className='filterButton'>
-								<button tabIndex={this.props.tab.tabSearch} aria-label='Filter events' className='filterButton' onClick={(e) => this.openList(e)}><Glyphicon glyph="filter"></Glyphicon></button>
+								<button tabIndex={this.props.tab.tabSearch} aria-label='Filter events' aria-haspopup="listbox" className='filterButton' onClick={(e) => this.openList(e)}><Glyphicon glyph="filter"></Glyphicon></button>
 								{this.state.openList && (
 									<ul id='selectlist' ref={this.listRef} role='listbox'>
 										{this.props.filterOpt.map(select => (
-											<button tabIndex={this.props.tab.tabSearch} role='link' aria-label={select.name} key={select.id} aria-selected={select.id === current ? 'true' : 'false'} current={select.id === current ? 'selected' : ''} onClick={(selection) => this.changeFilter(selection)} id={select.id}>{select.name}</button>
+											<button tabIndex={this.props.tab.tabSearch} role='option' aria-label={select.name} key={select.id} aria-selected={select.id === current ? 'true' : 'false'} current={select.id === current ? 'selected' : ''} onClick={(selection) => this.changeFilter(selection)} id={select.id}>{select.name}</button>
 										))}
 									</ul>
 								)}

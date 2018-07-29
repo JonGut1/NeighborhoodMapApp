@@ -9,6 +9,7 @@ const placesKey = 'PK3DLDNZ0WJA515SUGE1JN0FEDG23NAXKQFLIGSX0A44A55D';
 /* Google maps class responsible for fetching thegoogle maps api */
 class GoogleMaps {
 	static getMaps() {
+		/* some of the code is taken from https://www.klaasnotfound.com/2016/11/06/making-google-maps-work-with-react/ */
 		/* find existing script tag */
 	    const existScript = document.getElementsByTagName('script')[0];
 	    /* create a new script tag */
@@ -52,7 +53,6 @@ class FoursquarePlaces {
 		  })
 		  .catch(err => {
 		  	console.log('Could not fetch places.............', err);
-		  	return err;
 		  })
 	}
 
@@ -72,7 +72,7 @@ class FoursquarePlaces {
 
 	/* fetch venue details */
 	static getDetails(venueId) {
-		return fetch(`https://api.foursquare.com/v2/venues/venueId?client_secret=${placesKey}&client_id=${clientId}&v=20180323`)
+		return fetch(`https://api.foursquare.com/v2/venues/${venueId}?client_secret=${placesKey}&client_id=${clientId}&v=20180323`)
 		.then(response => {
 			return response.json();
 		})
