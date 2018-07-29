@@ -9,7 +9,7 @@
 
 ## Installation
 
-To start the project, first yuo will have to clone NeighborhoodMapApp repo. Then navigate to the project's directory with a console and type
+To start the project, first you will have to clone NeighborhoodMapApp repo. Then navigate to the project's directory with a console and type
 ```
 npm install
 ```
@@ -34,12 +34,13 @@ The project was done as part of the Udacity fend course. Everything was done by 
 
 This app let's you explore the places of a set location. The map that is displayed is fetched from google maps api and all of the places are found by the Foursquare places api.
 
-You can click on any of the markers to open an info window about that location. Also you can click on a place's location name on the side menu and the info window will also pop up. Furhtermore you can filter down the result by typing something in a 'Filter Results' input field. If you want to find places of other type, such as shops or universities, then you can click on the filter icon and select a category of places.
+You can click on any of the markers to open an info window about that location. Also you can click on a place's location name on the side menu and the info window will also pop up. Furhtermore you can filter down the results by typing something in a 'Filter Results' input field. If you want to find places of other type, such as shops or universities, then you can click on the filter icon and select a category of places.
 
 ## Dependencies
 
-Bootstrap glyphicons are used for some of the icons in the app
-"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css".
+Google maps api is responsible for displaying the map on the screen. Also for the markers on the map and the info windows. Also the street view images in the info windows.
+
+Foursquare places api is responsible for fetching the right places based on the category and location. Also it is responsible for almost all of the info about the selected place, besides the google maps street view image.
 
 ### npm dependencies
 
@@ -56,6 +57,7 @@ escape-string-regexp is used to extract the needed strings from the url.
 ```
 npm install --save escape-string-regexp
 ```
+react bootstrap is used so that glyphicons could be used
 
 sw-precache is used to precache the static files and to add runtimeCaching.
 ```
