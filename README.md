@@ -17,14 +17,16 @@ then, if you want to run the project type
 ```
 npm start
 ```
-Also if you want to experience the build version which includes service worker type into the console
-```
-serve -s build
-```
-Or if you want to build the project yourself type
+Also if you want to experience the build version which includes a service worker. First you will have to build the app by typing
 ```
 npm run build
 ```
+then you can run
+```
+serve -s build
+```
+or follow the instructions on the screen.
+
 
 ## About
 
