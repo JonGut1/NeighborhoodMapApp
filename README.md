@@ -38,9 +38,9 @@ You can click on any of the markers to open an info window about that location. 
 
 ## Dependencies
 
-Google maps api is responsible for displaying the map on the screen. Also for the markers on the map and the info windows. Also the street view images in the info windows.
+Google maps api is responsible for displaying the map on the screen. Also for the markers on the map and the info windows. Also the street view images in the info windows. (https://developers.google.com/maps/documentation/javascript/tutorial).
 
-Foursquare places api is responsible for fetching the right places based on the category and location. Also it is responsible for almost all of the info about the selected place, besides the google maps street view image.
+Foursquare places api is responsible for fetching the right places based on the category and location. Also it is responsible for almost all of the info about the selected place, besides the google maps street view image. (https://developer.foursquare.com).
 
 ### npm dependencies
 
