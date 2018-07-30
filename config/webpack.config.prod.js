@@ -326,7 +326,7 @@ module.exports = {
       /* runtime caching for the api calls */
       runtimeCaching: [{
         urlPattern: /venues/,
-        handler: 'fastest',
+        handler: 'cacheFirst',
         options: {
           cacheId: 'venues',
           cache: {
@@ -336,7 +336,7 @@ module.exports = {
         }
       }, {
         urlPattern: /maps/,
-        handler: 'fastest',
+        handler: 'cacheFirst',
         options: {
           cacheId: 'maps',
           cache: {
