@@ -64,8 +64,8 @@ class App extends Component {
     */
     window.google.maps.event.addListener(this.map, 'bounds_changed', () => {
       const bounds = this.map.getBounds();
-      const sw = `${bounds.f.b}, ${bounds.b.b}`;
-      const ne = `${bounds.f.f}, ${bounds.b.f}`;
+      const sw = `${bounds.j.l}, ${bounds.l.l}`;
+      const ne = `${bounds.j.j}, ${bounds.l.j}`;
       if (call) {
         call = false;
         this.getCategor().then(() => {
