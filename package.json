@@ -1,5 +1,6 @@
 {
   "name": "neighborhood-map",
+  "homepage": "https://jongut1.github.io/NeighborhoodMapApp/",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -93,5 +94,8 @@
   },
   "eslintConfig": {
     "extends": "react-app"
+  },
+  "devDependencies": {
+    "gh-pages": "^2.0.1"
   }
 }
